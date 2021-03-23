@@ -4,10 +4,11 @@ from sklearn.datasets import load_iris
 from matplotlib import pyplot as plt
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
-import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import r2_score
+from sklearn.model_selection import cross_val_score
+import pandas as pd
 
 #%%codecell
 #load data
@@ -29,19 +30,25 @@ print(X.head())
 
 #%%codecell
 #spilting data
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.4)
-X_test, X_cv, y_test, y_cv = train_test_split(X_test, y_test, test_size=0.5)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2)
+
+#%%codecell
+#finding optimal value of k
+score = []
+for k in range(1, 11):
+    knn = KNeighborsClassifier(n_neighbors=k)
+    score.append(cross_val_score(knn, X_train, y_train, scoring = 'accuracy', cv = 10).mean())
+print(score)
+plt.plot(range(1, 11), score)
+
 
 #%%codecell
 #training model
-knn = KNeighborsClassifier()
+knn = KNeighborsClassifier(n_neighbors = 5)
 knn.fit(X_train, y_train)
 
 #%%codecell
 #predicting data and calculating accuracy
-y_pred_test = knn.predict(X_test)
-print('accuracy on test set =', knn.score(X_test, y_test))
-print('accuracy on cross validation set =', knn.score(X_cv, y_cv))
-y_pred_cv = knn.predict(X_cv)
-print('r2 score on test set =', r2_score(y_test, y_pred_test))
-print('r2 score on cross validation set =', r2_score(y_cv, y_pred_cv))
+y_pred = knn.predict(X_test)
+print('accuracy:', knn.score(X_test, y_test))
+print('r2 score:', r2_score(y_test, y_pred))
